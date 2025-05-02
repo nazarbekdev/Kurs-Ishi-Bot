@@ -1,0 +1,121 @@
+2025-05-02 04:00:05,911 - INFO - Start polling
+2025-05-02 04:00:06,282 - INFO - Run polling for bot @KursIshiRobot id=7793756757 - 'Kurs Ish'
+2025-05-02 04:00:11,605 - INFO - Update id=705958487 is handled. Duration 505 ms by bot id=7793756757
+2025-05-02 04:00:13,349 - INFO - Update id=705958488 is handled. Duration 332 ms by bot id=7793756757
+2025-05-02 04:00:19,288 - INFO - Update id=705958489 is handled. Duration 149 ms by bot id=7793756757
+2025-05-02 04:00:28,907 - INFO - Update id=705958490 is handled. Duration 139 ms by bot id=7793756757
+2025-05-02 04:00:31,108 - INFO - Update id=705958491 is handled. Duration 254 ms by bot id=7793756757
+2025-05-02 04:00:33,393 - INFO - Balansni tekshirish: User ID: 5605407368, Urinish: 1/3
+2025-05-02 04:00:33,401 - ERROR - API bilan bog‘lanishda xatolik: User ID: 5605407368, Xato: HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /api/get/5605407368/ (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0xffff919b7970>: Failed to establish a new connection: [Errno 111] Connection refused'))
+2025-05-02 04:00:33,417 - INFO - Balansni tekshirish: User ID: 5605407368, Urinish: 2/3
+2025-05-02 04:00:33,418 - ERROR - API bilan bog‘lanishda xatolik: User ID: 5605407368, Xato: HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /api/get/5605407368/ (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0xffff918ad700>: Failed to establish a new connection: [Errno 111] Connection refused'))
+2025-05-02 04:00:33,419 - INFO - Balansni tekshirish: User ID: 5605407368, Urinish: 3/3
+2025-05-02 04:00:33,420 - ERROR - API bilan bog‘lanishda xatolik: User ID: 5605407368, Xato: HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /api/get/5605407368/ (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0xffff918ad4c0>: Failed to establish a new connection: [Errno 111] Connection refused'))
+2025-05-02 04:00:33,707 - INFO - Update id=705958492 is handled. Duration 314 ms by bot id=7793756757
+2025-05-02 04:05:49,665 - WARNING - Received SIGTERM signal
+2025-05-02 04:05:49,668 - INFO - Polling stopped for bot @KursIshiRobot id=7793756757 - 'Kurs Ish'
+2025-05-02 04:05:49,668 - INFO - Polling stopped
+2025-05-02 04:05:59,094 - INFO - Start polling
+2025-05-02 04:05:59,470 - INFO - Run polling for bot @KursIshiRobot id=7793756757 - 'Kurs Ish'
+2025-05-02 04:06:02,631 - INFO - Update id=705958493 is handled. Duration 417 ms by bot id=7793756757
+2025-05-02 04:06:04,431 - INFO - Update id=705958494 is handled. Duration 294 ms by bot id=7793756757
+2025-05-02 04:06:09,587 - INFO - Update id=705958495 is handled. Duration 147 ms by bot id=7793756757
+2025-05-02 04:06:13,931 - INFO - Update id=705958496 is handled. Duration 170 ms by bot id=7793756757
+2025-05-02 04:06:16,219 - INFO - Update id=705958497 is handled. Duration 283 ms by bot id=7793756757
+2025-05-02 04:06:18,562 - INFO - Balansni tekshirish: User ID: 5605407368, Urinish: 1/3
+2025-05-02 04:06:18,611 - INFO - API javob status kodi: 200
+2025-05-02 04:06:18,611 - INFO - Balans olingan: User ID: 5605407368, Balans: 10000.00
+2025-05-02 04:06:19,057 - INFO - Update id=705958498 is handled. Duration 495 ms by bot id=7793756757
+2025-05-02 04:06:35,859 - INFO - Update id=705958499 is handled. Duration 422 ms by bot id=7793756757
+2025-05-02 04:06:52,924 - INFO - Update id=705958500 is handled. Duration 471 ms by bot id=7793756757
+2025-05-02 04:06:55,142 - INFO - Update id=705958501 is handled. Duration 274 ms by bot id=7793756757
+2025-05-02 04:07:03,955 - INFO - Update id=705958502 is handled. Duration 131 ms by bot id=7793756757
+2025-05-02 04:07:05,773 - INFO - Update id=705958503 is handled. Duration 135 ms by bot id=7793756757
+2025-05-02 04:07:07,415 - INFO - Update id=705958504 is handled. Duration 261 ms by bot id=7793756757
+2025-05-02 04:07:08,440 - INFO - Balansni tekshirish: User ID: 5605407368, Urinish: 1/3
+2025-05-02 04:07:08,499 - INFO - API javob status kodi: 200
+2025-05-02 04:07:08,500 - INFO - Balans olingan: User ID: 5605407368, Balans: 100000.00
+2025-05-02 04:07:08,501 - INFO - Balansni yangilash: User ID: 5605407368, Yangi balans: 70000.0, Urinish: 1/3
+2025-05-02 04:07:08,522 - INFO - API javob status kodi: 500
+2025-05-02 04:07:08,522 - ERROR - HTTP Xatolik: User ID: 5605407368, Status kodi: 500, Xato: 500 Server Error: Internal Server Error for url: http://backend:8000/api/update/5605407368
+2025-05-02 04:07:11,216 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-05-02 04:07:20,402 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-05-02 04:07:20,592 - INFO - Update id=705958506 is handled. Duration 139 ms by bot id=7793756757
+2025-05-02 04:07:28,945 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-05-02 04:07:37,130 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-05-02 04:07:46,111 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-05-02 04:07:55,135 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-05-02 04:08:03,626 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-05-02 04:08:11,043 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-05-02 04:08:16,740 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-05-02 04:08:20,496 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-05-02 04:08:24,009 - INFO - Update id=705958505 is not handled. Duration 75570 ms by bot id=7793756757
+2025-05-02 04:08:24,010 - ERROR - Cause exception while process update id=705958505 by bot id=7793756757
+TelegramBadRequest: Telegram server says - Bad Request: query is too old and response timeout expired or query ID is invalid
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.9/site-packages/aiogram/dispatcher/dispatcher.py", line 309, in _process_update
+    response = await self.feed_update(bot, update, **kwargs)
+  File "/usr/local/lib/python3.9/site-packages/aiogram/dispatcher/dispatcher.py", line 158, in feed_update
+    response = await self.update.wrap_outer_middleware(
+  File "/usr/local/lib/python3.9/site-packages/aiogram/dispatcher/middlewares/error.py", line 25, in __call__
+    return await handler(event, data)
+  File "/usr/local/lib/python3.9/site-packages/aiogram/dispatcher/middlewares/user_context.py", line 49, in __call__
+    return await handler(event, data)
+  File "/usr/local/lib/python3.9/site-packages/aiogram/fsm/middleware.py", line 42, in __call__
+    return await handler(event, data)
+  File "/usr/local/lib/python3.9/site-packages/aiogram/dispatcher/event/telegram.py", line 121, in trigger
+    return await wrapped_inner(event, kwargs)
+  File "/usr/local/lib/python3.9/site-packages/aiogram/dispatcher/event/handler.py", line 43, in call
+    return await wrapped()
+  File "/usr/local/lib/python3.9/site-packages/aiogram/dispatcher/dispatcher.py", line 276, in _listen_update
+    return await self.propagate_event(update_type=update_type, event=event, **kwargs)
+  File "/usr/local/lib/python3.9/site-packages/aiogram/dispatcher/router.py", line 142, in propagate_event
+    return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+  File "/usr/local/lib/python3.9/site-packages/aiogram/dispatcher/router.py", line 137, in _wrapped
+    return await self._propagate_event(
+  File "/usr/local/lib/python3.9/site-packages/aiogram/dispatcher/router.py", line 170, in _propagate_event
+    response = await router.propagate_event(update_type=update_type, event=event, **kwargs)
+  File "/usr/local/lib/python3.9/site-packages/aiogram/dispatcher/router.py", line 142, in propagate_event
+    return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+  File "/usr/local/lib/python3.9/site-packages/aiogram/dispatcher/router.py", line 137, in _wrapped
+    return await self._propagate_event(
+  File "/usr/local/lib/python3.9/site-packages/aiogram/dispatcher/router.py", line 162, in _propagate_event
+    response = await observer.trigger(event, **kwargs)
+  File "/usr/local/lib/python3.9/site-packages/aiogram/dispatcher/event/telegram.py", line 121, in trigger
+    return await wrapped_inner(event, kwargs)
+  File "/usr/local/lib/python3.9/site-packages/aiogram/dispatcher/event/handler.py", line 43, in call
+    return await wrapped()
+  File "/app/handlers/course.py", line 485, in confirm_course
+    await callback.answer()
+  File "/usr/local/lib/python3.9/site-packages/aiogram/methods/base.py", line 84, in emit
+    return await bot(self)
+  File "/usr/local/lib/python3.9/site-packages/aiogram/client/bot.py", line 509, in __call__
+    return await self.session(self, method, timeout=request_timeout)
+  File "/usr/local/lib/python3.9/site-packages/aiogram/client/session/base.py", line 254, in __call__
+    return cast(TelegramType, await middleware(bot, method))
+  File "/usr/local/lib/python3.9/site-packages/aiogram/client/session/aiohttp.py", line 178, in make_request
+    response = self.check_response(
+  File "/usr/local/lib/python3.9/site-packages/aiogram/client/session/base.py", line 120, in check_response
+    raise TelegramBadRequest(method=method, message=description)
+aiogram.exceptions.TelegramBadRequest: Telegram server says - Bad Request: query is too old and response timeout expired or query ID is invalid
+2025-05-02 04:11:18,236 - WARNING - Received SIGTERM signal
+2025-05-02 04:11:18,240 - INFO - Polling stopped for bot @KursIshiRobot id=7793756757 - 'Kurs Ish'
+2025-05-02 04:11:18,241 - INFO - Polling stopped
+2025-05-02 04:11:27,250 - INFO - Start polling
+2025-05-02 04:11:27,627 - INFO - Run polling for bot @KursIshiRobot id=7793756757 - 'Kurs Ish'
+2025-05-02 04:11:37,105 - INFO - Update id=705958507 is handled. Duration 484 ms by bot id=7793756757
+2025-05-02 04:11:42,816 - INFO - Update id=705958508 is handled. Duration 183 ms by bot id=7793756757
+2025-05-02 04:11:56,491 - INFO - Update id=705958509 is handled. Duration 202 ms by bot id=7793756757
+2025-05-02 04:12:13,641 - INFO - Update id=705958510 is handled. Duration 560 ms by bot id=7793756757
+2025-05-02 04:12:23,506 - INFO - Update id=705958511 is handled. Duration 181 ms by bot id=7793756757
+2025-05-02 04:16:57,822 - WARNING - Received SIGTERM signal
+2025-05-02 04:16:57,830 - INFO - Polling stopped for bot @KursIshiRobot id=7793756757 - 'Kurs Ish'
+2025-05-02 04:16:57,830 - INFO - Polling stopped
+2025-05-02 04:17:08,026 - INFO - Start polling
+2025-05-02 04:17:08,467 - INFO - Run polling for bot @KursIshiRobot id=7793756757 - 'Kurs Ish'
+2025-05-02 04:17:17,765 - INFO - Update id=705958512 is handled. Duration 476 ms by bot id=7793756757
+2025-05-02 04:17:19,936 - INFO - Update id=705958513 is handled. Duration 150 ms by bot id=7793756757
+2025-05-02 04:17:27,950 - INFO - Update id=705958514 is handled. Duration 346 ms by bot id=7793756757
+2025-05-02 04:22:08,977 - WARNING - Received SIGTERM signal
+2025-05-02 04:22:08,981 - INFO - Polling stopped for bot @KursIshiRobot id=7793756757 - 'Kurs Ish'
+2025-05-02 04:22:08,982 - INFO - Polling stopped

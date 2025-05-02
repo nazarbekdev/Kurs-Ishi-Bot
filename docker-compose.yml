@@ -1,0 +1,45 @@
+services:
+  db:
+    image: postgres:14.17
+    environment:
+      POSTGRES_DB: kurs_ishi_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 2400
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: bash -c "python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=True
+      - DATABASE_URL=postgresql://postgres:2400@db:5432/kurs_ishi_db
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    depends_on:
+      - db
+
+  bot:
+    build:
+      context: ./bot
+      dockerfile: Dockerfile
+    command: python main.py
+    volumes:
+      - ./bot:/app
+    environment:
+      - BOT_TOKEN=${BOT_TOKEN}
+      - BACKEND_URL=http://backend:8000
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - API_URL=http://backend:8000
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:

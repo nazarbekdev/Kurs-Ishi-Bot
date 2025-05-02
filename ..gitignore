@@ -1,0 +1,49 @@
+# Python virtual muhitlari
+venv/
+env/
+.venv/
+.env/
+
+# Python vaqtinchalik fayllar
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+
+# Log fayllar
+*.log
+bot_logs.log
+
+# Generatsiya qilingan fayllar va papkalar
+generated_docs/
+*.docx
+
+# Muammoli fayllar va papkalar
+*.swp
+*.swo
+*.swn
+
+# IDE va editorlar bilan bog'liq fayllar
+.idea/  # PyCharm
+.vscode/  # Visual Studio Code
+*.sublime-workspace
+*.sublime-project
+
+# MacOS tizim fayllari
+.DS_Store
+
+# Muammoli fayllar
+*.bak
+*.tmp
+*.temp
+
+# Muammoli ma'lumotlar fayllari
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local

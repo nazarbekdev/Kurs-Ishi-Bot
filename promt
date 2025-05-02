@@ -1,0 +1,94 @@
+Endi qara men sen bilan kurs loyihasini muvaffaqiyatli yakunlashimiz kerak.
+
+Menda botning skeliti va kurs ishini generatsiya qilish uchun barcha qism kodlari mavjud.
+
+endi hammasini bir biriga bog'lashimiz kerak bo'ladi(qadamba qadam)
+
+Dastlab senga user(talaba)dan Kurs ishi yozish uchun barcha kerakli ma'lumotlarni olish kodini taqdim etaman.
+
+from aiogram import Router, F
+from aiogram.types import Message, BufferedInputFile
+from keyboards.keyboards import language_kb, confirm_kb, main_kb
+import asyncio
+from pathlib import Path
+
+file_path = Path(__file__).parent / 'Bank.docx'
+
+router = Router()
+
+user_data = {}
+
+
+@router.message(F.text == "Kurs ishi")
+async def course_start(message: Message):
+    await message.answer("Kurs ishi yozmoqchi bo’lgan fan nomini kiriting:")
+    user_data[message.from_user.id] = {}
+
+
+@router.message(lambda message: message.from_user.id in user_data and 'fan' not in user_data[message.from_user.id])
+async def get_fan(message: Message):
+    user_data[message.from_user.id]['fan'] = message.text
+    await message.answer("Mavzu nomini kiriting:")
+
+
+@router.message(lambda message: message.from_user.id in user_data and 'mavzu' not in user_data[message.from_user.id])
+async def get_mavzu(message: Message):
+    user_data[message.from_user.id]['mavzu'] = message.text
+    await message.answer("Kurs ishi sahifalar sonini kiriting:")
+
+
+@router.message(lambda message: message.from_user.id in user_data and 'sahifa' not in user_data[message.from_user.id])
+async def get_sahifa(message: Message):
+    if not message.text.isdigit():
+        await message.answer("Iltimos, faqat raqam kiriting.")
+        return
+    user_data[message.from_user.id]['sahifa'] = int(message.text)
+    await message.answer("Qaysi tilda bo’lsin:", reply_markup=language_kb)
+
+
+@router.message(lambda message: message.from_user.id in user_data and 'til' not in user_data[message.from_user.id])
+async def get_language(message: Message):
+    user_data[message.from_user.id]['til'] = message.text
+    data = user_data[message.from_user.id]
+    await message.answer(
+        f"Ma’lumotlar to’g’rimi?\n\n"
+        f"• Fan: {data['fan']}\n"
+        f"• Mavzu: {data['mavzu']}\n"
+        f"• Sahifalar: {data['sahifa']}\n"
+        f"• Til: {data['til']}\n\n"
+        f"Narxi: 50000 so’m\n",
+        reply_markup=confirm_kb
+    )
+
+
+@router.message(F.text == "Ha")
+async def confirm_course(message: Message):
+    await message.answer("Kurs ishi tayyorlanmoqda...\n\n[0%.....................]")
+    await asyncio.sleep(3)
+
+    # Check if file exists
+    if not file_path.exists():
+        await message.answer("Xatolik: Fayl topilmadi!")
+        return
+
+    # Read the file content and create BufferedInputFile
+    with open(file_path, 'rb') as file:
+        file_content = file.read()
+    document = BufferedInputFile(file_content, filename="Bank.docx")
+
+    await message.answer_document(document)
+    await message.answer("✅ Xizmatimizdan foydalanganingiz uchun tashakkur!")
+    user_data.pop(message.from_user.id, None)
+
+
+@router.message(F.text == "Yo'q")
+async def cancel_course(message: Message):
+    await message.answer("Bekor qilindi.", reply_markup=main_kb)
+    user_data.pop(message.from_user.id, None)
+
+
+
+bunda: [Fan, Mavzu, Sahifalar soni, Til] kabi ma'lumotlar olinadi. mana shu ma'lumotlarga asoslanib kurs ishini docx file da tayyorlashimiz kerak.
+
+bu uchun menda quyidagicha funksiyalar mavjud:
+1. Kurs ishi uchun Mundarija shakllantirish -->
