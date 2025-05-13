@@ -1,8 +1,7 @@
 import asyncio
 import logging
 from aiogram import Bot, Dispatcher
-from aiogram.enums.parse_mode import ParseMode
-from handlers import start, course, balance, tariffs, check, payment_user
+from handlers import start, course, balance, tariffs, check, payment_user, independent_work, coupon
 from dotenv import load_dotenv
 import os
 
@@ -18,6 +17,8 @@ async def main():
     dp.include_routers(
         start.router,
         course.router,
+        independent_work.independent_router,
+        coupon.coupon_router,
         balance.router,
         tariffs.router,
         check.router,

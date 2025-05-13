@@ -1,80 +1,58 @@
 import os
-import datetime
 from aiogram import Router, F
 from aiogram.enums import ParseMode
-from aiogram.types import Message, BufferedInputFile, InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
-from keyboards.keyboards import language_kb, confirm_kb, main_kb
+from aiogram.types import Message, BufferedInputFile, CallbackQuery
 import asyncio
 import requests
 import logging
 from pathlib import Path
-from utils.generate_mundarija import generate_mundarija
-from utils.generate_kirish import generate_kirish
-from utils.generate_I_bob import generate_bob_1
-from utils.generate_I_bob import generate_bob_2
-from utils.merge_docx import merge_docx_files
-from utils.generate_xulosa import generate_xulosa
-from utils.generate_foydalanilgan_adabiyotlar import generate_foydalanilgan_adabiyotlar
-import pytz
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
+from keyboards.keyboards import main_kb
 
 # Logging sozlamalari
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler("bot_logs.log"),
-        logging.StreamHandler()
+        logging.FileHandler("bot_logs.log"),  # Loglarni faylga yozish
+        logging.StreamHandler()  # Konsolga chiqarish
     ]
 )
 
 logger = logging.getLogger(__name__)
 
-router = Router()
+# Mustaqil ish uchun generatsiya funksiyalari
+from mustaqil_ish_utils.mundarija import generate_mundarija
+from mustaqil_ish_utils.kirish import generate_kirish
+from mustaqil_ish_utils.asosiy import generate_asosiy
+from mustaqil_ish_utils.xulosa import generate_xulosa
+from mustaqil_ish_utils.adabiyotlar import generate_foydalanilgan_adabiyotlar
+from mustaqil_ish_utils.utils import merge_docs
 
-# Vaqt mintaqasi
-TZ = pytz.timezone('Asia/Tashkent')
-
-# Foydalanuvchi ma'lumotlarini saqlash uchun lug'at
-user_data = {}
+# Alohida router yaratish
+independent_router = Router()
 
 # Inline buttonlar uchun keyboardlar
 language_kb = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text="O'zbekcha", callback_data="lang_uz")],
-    [InlineKeyboardButton(text="Ruscha", callback_data="lang_ru")],
-    [InlineKeyboardButton(text="Inglizcha", callback_data="lang_en")]
-])
-
-pages_kb = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text="10-20 sahifa", callback_data="pages_10_20")],
-    [InlineKeyboardButton(text="20-30 sahifa", callback_data="pages_20_30")],
-    [InlineKeyboardButton(text="30-40 sahifa", callback_data="pages_30_40")]
+    [InlineKeyboardButton(text="O'zbekcha", callback_data="indep_lang_uz")],
+    [InlineKeyboardButton(text="Ruscha", callback_data="indep_lang_ru")],
+    [InlineKeyboardButton(text="Inglizcha", callback_data="indep_lang_en")]
 ])
 
 confirm_kb = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text="Ha ✅", callback_data="confirm_yes")],
-    [InlineKeyboardButton(text="Yo'q ❌", callback_data="confirm_no")]
+    [InlineKeyboardButton(text="Ha ✅", callback_data="indep_confirm_yes")],
+    [InlineKeyboardButton(text="Yo'q ❌", callback_data="indep_confirm_no")]
 ])
 
-main_kb = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text="Kurs ishi", callback_data="kurs_ishi")]
-])
+# Foydalanuvchi ma'lumotlarini saqlash uchun lug'at
+independent_user_data = {}
 
+# API sozlamalari va balans funksiyalari (oldin yozilganlarni qayta ishlatamiz)
 API_URL = os.getenv('API_URL')
-
-# API URL'lari
 GET_BALANCE_URL = f"{API_URL}/api/get/"
 UPDATE_BALANCE_URL = f"{API_URL}/api/update/"
 
-
-# Narx hisoblash funksiyasi
-def calculate_price(page_range: str) -> int:
-    if page_range == "10_20":
-        return 30000
-    elif page_range == "20_30":
-        return 50000
-    elif page_range == "30_40":
-        return 70000
-    return 0
+PRICE = 7000
 
 
 # Kuponni olish funksiyasi
@@ -86,10 +64,13 @@ async def get_user_coupon(user_id: int) -> dict:
         coupons = response.json()
 
         # Faqat bugungi kunda yaratilgan, foydalanilmagan va muddati tugamagan kuponlarni tanlaymiz
-        now = datetime.datetime.now(TZ)
+        from datetime import datetime
+        import pytz
+        TZ = pytz.timezone('Asia/Tashkent')
+        now = datetime.now(TZ)
         for coupon in coupons:
-            expiry = datetime.datetime.fromisoformat(coupon['expiry'].replace("Z", "+00:00")).astimezone(TZ)
-            if coupon['used'] == False and expiry > now and coupon['created_at'].startswith(now.strftime('%Y-%m-%d')):
+            expiry = datetime.fromisoformat(coupon['expiry'].replace("Z", "+00:00")).astimezone(TZ)
+            if not coupon['used'] and expiry > now and coupon['created_at'].startswith(now.strftime('%Y-%m-%d')):
                 logger.info(f"Faol kupon topildi: User ID: {user_id}, Kupon: {coupon['text']}")
                 return coupon
         logger.info(f"Faol kupon topilmadi: User ID: {user_id}")
@@ -104,7 +85,7 @@ async def mark_coupon_as_used(coupon_id: int, user_id: int) -> bool:
     try:
         logger.info(f"Kuponni ishlatilgan deb belgilash: Coupon ID: {coupon_id}, User ID: {user_id}")
         response = requests.patch(
-            f"{API_URL}/api/user-coupons/{coupon_id}/?telegram_id={user_id}",  # telegram_id qo'shildi
+            f"{API_URL}/api/user-coupons/{coupon_id}/?telegram_id={user_id}",
             json={"used": True},
             headers={"Content-Type": "application/json"},
             timeout=5
@@ -128,7 +109,6 @@ def apply_coupon_discount(price: int, coupon: dict) -> tuple[int, str]:
     return discounted_price, f"{discount_percentage}% chegirma qo‘llanildi"
 
 
-# Balansni tekshirish funksiyasi
 def check_balance(user_id: int, retries=3, delay=1) -> dict:
     for attempt in range(retries):
         try:
@@ -136,10 +116,13 @@ def check_balance(user_id: int, retries=3, delay=1) -> dict:
             response = requests.get(f"{GET_BALANCE_URL}{user_id}", timeout=5)
             response.raise_for_status()
             balance_data = response.json()
-            logger.info(f"Balans olingan: User ID: {user_id}, Balans: {balance_data['balance']}")
             return balance_data
-        except requests.RequestException as e:
-            logger.error(f"Balans olishda xatolik: User ID: {user_id}, Xato: {str(e)}")
+        except requests.Timeout:
+            if attempt < retries - 1:
+                asyncio.sleep(delay)
+                continue
+            return None
+        except (requests.HTTPError, requests.RequestException):
             if attempt < retries - 1:
                 asyncio.sleep(delay)
                 continue
@@ -169,69 +152,60 @@ def update_balance(user_id: int, new_balance: float, retries=5, delay=2):
             return False
 
 
-# Tilga qarab xabarlar (HTML formatida)
+# Tilga qarab xabarlar
 language_messages = {
     "uz": {
-        "fan": "Kurs ishi yozmoqchi bo’lgan fan yoki sohani nomini kiriting:",
+        "fan": "Mustaqil ish yozmoqchi bo’lgan fan yoki sohani nomini kiriting:",
         "mavzu": "Mavzu nomini kiriting:\n\nE'tibor bering!\nMavzu nomini kiritayotganda imlo qoidalariga rioya qiling!\nQisqartma so'zlardan foydalanmang!",
-        "sahifa": "Kurs ishi sahifalar sonini tanlang:",
         "confirm": "📋 <b>Ma’lumotlar to’g’rimi?</b>\n\n"
                    "• <b>Til:</b> {til}\n"
                    "• <b>Fan:</b> {fan}\n"
-                   "• <b>Mavzu:</b> {mavzu}\n"
-                   "• <b>Sahifalar:</b> {sahifa}\n\n"
+                   "• <b>Mavzu:</b> {mavzu}\n\n"
                    "💸 <b>Asl narxi:</b> <s>{price:,} so’m</s>\n"
                    "🎉 <b>Chegirma bilan:</b> {discounted_price:,} so’m <i>({discount_info})</i>\n\n"
                    "👇 Tasdiqlang yoki bekor qiling:",
         "confirm_no_coupon": "📋 <b>Ma’lumotlar to’g’rimi?</b>\n\n"
                              "• <b>Til:</b> {til}\n"
                              "• <b>Fan:</b> {fan}\n"
-                             "• <b>Mavzu:</b> {mavzu}\n"
-                             "• <b>Sahifalar:</b> {sahifa}\n\n"
+                             "• <b>Mavzu:</b> {mavzu}\n\n"
                              "💸 <b>Narxi:</b> {price:,} so’m\n\n"
                              "👇 Tasdiqlang yoki bekor qiling:",
         "balance_error": "❌ Balansingizda yetarli mablag' mavjud emas! Hozirgi balans: {balance} so'm.\nIltimos, balansingizni to'ldiring.",
         "cancel": "Bekor qilindi."
     },
     "ru": {
-        "fan": "Введите название предмета или области, по которой хотите написать курсовую работу:",
+        "fan": "Введите название предмета или области, по которой хотите написать самостоятельную работу:",
         "mavzu": "Введите название темы:\n\nОбратите внимание!\nПри вводе названия темы соблюдайте правила орфографии!\nНе используйте сокращения!",
-        "sahifa": "Выберите количество страниц курсовой работы:",
         "confirm": "📋 <b>Правильны ли данные?</b>\n\n"
                    "• <b>Язык:</b> {til}\n"
                    "• <b>Предмет:</b> {fan}\n"
-                   "• <b>Тема:</b> {mavzu}\n"
-                   "• <b>Страницы:</b> {sahifa}\n\n"
+                   "• <b>Тема:</b> {mavzu}\n\n"
                    "💸 <b>Изначальная стоимость:</b> <s>{price:,} сум</s>\n"
                    "🎉 <b>Со скидкой:</b> {discounted_price:,} сум <i>({discount_info})</i>\n\n"
                    "👇 Подтвердите или отмените:",
         "confirm_no_coupon": "📋 <b>Правильны ли данные?</b>\n\n"
                              "• <b>Язык:</b> {til}\n"
                              "• <b>Предмет:</b> {fan}\n"
-                             "• <b>Тема:</b> {mavzu}\n"
-                             "• <b>Страницы:</b> {sahifa}\n\n"
+                             "• <b>Тема:</b> {mavzu}\n\n"
                              "💸 <b>Стоимость:</b> {price:,} сум\n\n"
                              "👇 Подтвердите или отмените:",
         "balance_error": "❌ На вашем балансе недостаточно средств! Текущий баланс: {balance} сум.\nПожалуйста, пополните баланс.",
         "cancel": "Отменено."
     },
     "en": {
-        "fan": "Enter the name of the subject or field for your coursework:",
+        "fan": "Enter the name of the subject or field for your independent study:",
         "mavzu": "Enter the topic name:\n\nPlease note!\nWhen entering the topic name, follow spelling rules!\nDo not use abbreviations!",
-        "sahifa": "Select the number of pages for your coursework:",
         "confirm": "📋 <b>Are the details correct?</b>\n\n"
                    "• <b>Language:</b> {til}\n"
                    "• <b>Subject:</b> {fan}\n"
-                   "• <b>Topic:</b> {mavzu}\n"
-                   "• <b>Pages:</b> {sahifa}\n\n"
+                   "• <b>Topic:</b> {mavzu}\n\n"
                    "💸 <b>Original Price:</b> <s>{price:,} UZS</s>\n"
                    "🎉 <b>With Discount:</b> {discounted_price:,} UZS <i>({discount_info})</i>\n\n"
                    "👇 Confirm or cancel:",
         "confirm_no_coupon": "📋 <b>Are the details correct?</b>\n\n"
                              "• <b>Language:</b> {til}\n"
                              "• <b>Subject:</b> {fan}\n"
-                             "• <b>Topic:</b> {mavzu}\n"
-                             "• <b>Pages:</b> {sahifa}\n\n"
+                             "• <b>Topic:</b> {mavzu}\n\n"
                              "💸 <b>Price:</b> {price:,} UZS\n\n"
                              "👇 Confirm or cancel:",
         "balance_error": "❌ Insufficient funds in your balance! Current balance: {balance} UZS.\nPlease top up your balance.",
@@ -240,305 +214,259 @@ language_messages = {
 }
 
 
-@router.message(F.text == "🎓 Kurs ishi")
-async def course_start(message: Message):
+@independent_router.message(F.text == "📄 Mustaqil ish")
+async def independent_start(message: Message):
     await message.answer("Qaysi tilda bo’lsin:", reply_markup=language_kb)
-    user_data[message.from_user.id] = {}
+    independent_user_data[message.from_user.id] = {}
 
 
-@router.callback_query(F.data.startswith("lang_"))
+@independent_router.callback_query(F.data.startswith("indep_lang_"))
 async def get_language(callback: CallbackQuery):
     user_id = callback.from_user.id
-    lang = callback.data.split("_")[1]
+    lang = callback.data.split("_")[2]
     til_map = {"uz": "O'zbekcha", "ru": "Ruscha", "en": "Inglizcha"}
-    user_data[user_id]['til'] = til_map[lang]
-    user_data[user_id]['lang_code'] = lang
+    independent_user_data[user_id] = {'til': til_map[lang], 'lang_code': lang}
 
     lang_messages = language_messages[lang]
     await callback.message.edit_text(lang_messages["fan"], reply_markup=None)
     await callback.answer()
 
 
-@router.message(lambda message: message.from_user.id in user_data and 'fan' not in user_data[message.from_user.id])
+@independent_router.message(
+    lambda message: message.from_user.id in independent_user_data and 'fan' not in independent_user_data[
+        message.from_user.id])
 async def get_fan(message: Message):
     user_id = message.from_user.id
-    user_data[user_id]['fan'] = message.text
-    lang = user_data[user_id]['lang_code']
+    independent_user_data[user_id]['fan'] = message.text
+    lang = independent_user_data[user_id]['lang_code']
     await message.answer(language_messages[lang]["mavzu"])
 
 
-@router.message(lambda message: message.from_user.id in user_data and 'mavzu' not in user_data[message.from_user.id])
+@independent_router.message(
+    lambda message: message.from_user.id in independent_user_data and 'mavzu' not in independent_user_data[
+        message.from_user.id])
 async def get_mavzu(message: Message):
     user_id = message.from_user.id
-    user_data[user_id]['mavzu'] = message.text
-    lang = user_data[user_id]['lang_code']
-    await message.answer(language_messages[lang]["sahifa"], reply_markup=pages_kb)
+    independent_user_data[user_id]['mavzu'] = message.text
+    lang = independent_user_data[user_id]['lang_code']
+    data = independent_user_data[user_id]
 
-
-@router.callback_query(F.data.startswith("pages_"))
-async def get_sahifa(callback: CallbackQuery):
-    user_id = callback.from_user.id
-    page_range = callback.data.split("_", 1)[1]
-    page_map = {"10_20": "10-20", "20_30": "20-30", "30_40": "30-40"}
-    user_data[user_id]['sahifa_range'] = page_map[page_range]
-
-    start, end = map(int, page_map[page_range].split("-"))
-    user_data[user_id]['sahifa'] = (start + end) // 2
-
-    # Narxni hisoblash
-    price = calculate_price(page_range)
-    user_data[user_id]['price'] = price
+    # Narxni belgilash
+    data['price'] = PRICE
 
     # Kuponni tekshirish
     coupon = await get_user_coupon(user_id)
-    user_data[user_id]['coupon'] = coupon
+    data['coupon'] = coupon
 
     # Chegirma qo‘llash
     if coupon:
-        discounted_price, discount_info = apply_coupon_discount(price, coupon)
-        user_data[user_id]['discounted_price'] = discounted_price
-        user_data[user_id]['discount_info'] = discount_info
+        discounted_price, discount_info = apply_coupon_discount(data['price'], coupon)
+        data['discounted_price'] = discounted_price
+        data['discount_info'] = discount_info
     else:
-        user_data[user_id]['discounted_price'] = price
-        user_data[user_id]['discount_info'] = None
+        data['discounted_price'] = data['price']
+        data['discount_info'] = None
 
-    lang = user_data[user_id]['lang_code']
-    data = user_data[user_id]
+    # Xabarni shakllantirish
     if coupon:
         message_template = language_messages[lang]["confirm"]
-        await callback.message.edit_text(
+        await message.answer(
             message_template.format(
                 til=data['til'],
                 fan=data['fan'],
                 mavzu=data['mavzu'],
-                sahifa=data['sahifa_range'],
-                price=price,
+                price=data['price'],
                 discounted_price=data['discounted_price'],
                 discount_info=data['discount_info']
             ),
             reply_markup=confirm_kb,
-            parse_mode=ParseMode.HTML
+            parse_mode=ParseMode.HTML  # HTML parse_mode ishlatildi
         )
     else:
         message_template = language_messages[lang]["confirm_no_coupon"]
-        await callback.message.edit_text(
+        await message.answer(
             message_template.format(
                 til=data['til'],
                 fan=data['fan'],
                 mavzu=data['mavzu'],
-                sahifa=data['sahifa_range'],
-                price=price
+                price=data['price']
             ),
             reply_markup=confirm_kb,
-            parse_mode=ParseMode.HTML
+            parse_mode=ParseMode.HTML  # HTML parse_mode ishlatildi
         )
-    await callback.answer()
 
 
-@router.callback_query(F.data == "confirm_yes")
-async def confirm_course(callback: CallbackQuery):
+@independent_router.callback_query(F.data == "indep_confirm_yes")
+async def confirm_independent(callback: CallbackQuery):
     user_id = callback.from_user.id
-    if user_id not in user_data:
-        await callback.message.edit_text("Ma'lumotlar topilmadi. Iltimos, jarayonni qayta boshlang.",
-                                         reply_markup=main_kb, parse_mode=ParseMode.MARKDOWN)
+    if user_id not in independent_user_data or not independent_user_data[user_id]:
+        await callback.message.edit_text(
+            "Ma'lumotlar topilmadi. Iltimos, jarayonni qayta boshlang.",
+            reply_markup=main_kb,
+            parse_mode=ParseMode.HTML  # HTML ga o'zgartirildi
+        )
         await callback.answer()
         return
 
-    # Balansni tekshirish
     balance_data = check_balance(user_id)
     if not balance_data:
         await callback.message.edit_text(
             "❌ Server bilan bog‘lanishda xatolik yuz berdi. Iltimos, keyinroq urinib ko‘ring.",
-            parse_mode=ParseMode.MARKDOWN)
-        user_data.pop(user_id, None)
+            parse_mode=ParseMode.HTML  # HTML ga o'zgartirildi
+        )
+        independent_user_data.pop(user_id, None)
         await callback.answer()
         return
 
     current_balance = float(balance_data['balance'])
-    price = user_data[user_id]['discounted_price']  # Chegirma qo‘llangan narxni ishlatamiz
-    lang = user_data[user_id]['lang_code']
+    price = independent_user_data[user_id]['discounted_price']  # Chegirmali narxni ishlatamiz
+    lang = independent_user_data[user_id]['lang_code']
 
     if current_balance < price:
         await callback.message.edit_text(
             language_messages[lang]["balance_error"].format(balance=current_balance),
-            parse_mode=ParseMode.MARKDOWN
+            parse_mode=ParseMode.HTML  # HTML ga o'zgartirildi
         )
-        user_data.pop(user_id, None)
+        independent_user_data.pop(user_id, None)
         await callback.answer()
         return
 
-    # Balansdan pulni kesish va yangilash
     new_balance = current_balance - price
     if not update_balance(user_id, new_balance):
         await callback.message.edit_text(
             f"❌ Balansni yangilashda xatolik yuz berdi. Hozirgi balans: {current_balance} so‘m. "
             "Iltimos, keyinroq urinib ko‘ring.",
-            parse_mode=ParseMode.HTML
+            parse_mode=ParseMode.HTML  # HTML ga o'zgartirildi
         )
-        user_data.pop(user_id, None)
+        independent_user_data.pop(user_id, None)
         await callback.answer()
         return
 
     # Kuponni ishlatilgan deb belgilash
-    coupon = user_data[user_id].get('coupon')
+    coupon = independent_user_data[user_id].get('coupon')
     if coupon:
         if not await mark_coupon_as_used(coupon['id'], user_id):
             await callback.message.edit_text(
                 "❌ Kuponni yangilashda xatolik yuz berdi. Iltimos, keyinroq urinib ko‘ring.",
-                parse_mode=ParseMode.HTML
+                parse_mode=ParseMode.HTML  # HTML ga o'zgartirildi
             )
-            user_data.pop(user_id, None)
+            independent_user_data.pop(user_id, None)
             await callback.answer()
             return
 
-    # Kurs ishi tayyorlashni boshlash
-    progress_message = await callback.message.edit_text(
-        "📝 **Kurs ishi tayyorlanmoqda...**\n\n"
-        f"Fan: {user_data[user_id]['fan']}\n"
-        f"Mavzu: {user_data[user_id]['mavzu']}\n"
-        f"Til: {user_data[user_id]['til']}\n\n"
-        "⏳ [10% |██----------]\nMundarija tayyorlanmoqda...",
-        parse_mode=ParseMode.MARKDOWN
-    )
-
-    # Foydalanuvchi ma'lumotlarini olish
-    data = user_data[user_id]
+    data = independent_user_data[user_id]
     fan_nomi = data['fan']
     mavzu = data['mavzu']
     til = data['til']
-    sahifa = data['sahifa']
 
-    # Tilni moslashtirish
+    if til == "O'zbekcha":
+        til_ = "o'zbek tili"
+    elif til == "Ruscha":
+        til_ = "rus tili"
+    else:
+        til_ = "ingliz tili"
+
+    progress_message = await callback.message.edit_text(
+        "📝 <b>Mustaqil ish tayyorlanmoqda...</b>\n\n"
+        f"Fan: {fan_nomi}\n"
+        f"Mavzu: {mavzu}\n"
+        f"Til: {til}\n\n"
+        "⏳ [10% |██----------]\nMundarija tayyorlanmoqda...",
+        parse_mode=ParseMode.HTML  # HTML ga o'zgartirildi
+    )
+
     try:
-        if til == "O'zbekcha":
-            til_ = "o'zbek tili"
-        elif til == "Ruscha":
-            til_ = "rus tili"
-        else:
-            til_ = "ingliz tili"
-
-        # Mundarija generatsiya qilish
-        mundarija_text, mundarija_path, chapter_1_sections, chapter_2_sections = generate_mundarija(fan_nomi, mavzu,
-                                                                                                    til_)
+        mundarija_path, reja_items = generate_mundarija(fan_nomi, mavzu, til_)
         await asyncio.sleep(1)
 
         await progress_message.edit_text(
-            "📝 **Kurs ishi tayyorlanmoqda...**\n\n"
+            "📝 <b>Mustaqil ish tayyorlanmoqda...</b>\n\n"
             f"Fan: {fan_nomi}\n"
             f"Mavzu: {mavzu}\n"
-            f"Til: {til_}\n\n"
-            f"✅ **Mundarija tayyor!**\n"
-            f"I bob: {chapter_1_sections['chapter_title']}\n"
-            f"II bob: {chapter_2_sections['chapter_title']}\n\n"
+            f"Til: {til}\n\n"
+            f"✅ <b>Mundarija tayyor!</b>\n\n"
             "⏳ [25% |███---------]\nKirish qismi tayyorlanmoqda...",
-            parse_mode=ParseMode.MARKDOWN
+            parse_mode=ParseMode.HTML
         )
 
-        # Kirish qismini generatsiya qilish
         kirish_path = generate_kirish(fan_nomi, mavzu, til_)
         await asyncio.sleep(1)
 
         await progress_message.edit_text(
-            "📝 **Kurs ishi tayyorlanmoqda...**\n\n"
+            "📝 <b>Mustaqil ish tayyorlanmoqda...</b>\n\n"
             f"Fan: {fan_nomi}\n"
             f"Mavzu: {mavzu}\n"
-            f"Til: {til_}\n\n"
-            f"✅ **Mundarija tayyor!**\n"
-            f"✅ **Kirish qismi tayyor!**\n\n"
-            "⏳ [40% |█████-------]\nI bob tayyorlanmoqda...",
-            parse_mode=ParseMode.MARKDOWN
+            f"Til: {til}\n\n"
+            f"✅ <b>Mundarija tayyor!</b>\n"
+            f"✅ <b>Kirish qismi tayyor!</b>\n\n"
+            "⏳ [50% |██████------]\nAsosiy qism tayyorlanmoqda...",
+            parse_mode=ParseMode.HTML
         )
 
-        # I bobni generatsiya qilish
-        bob_1_path = generate_bob_1(fan_nomi, mavzu, til_, chapter_1_sections, sahifa)
+        asosiy_path = generate_asosiy(fan_nomi, mavzu, til_, reja_items, 13)
         await asyncio.sleep(1)
 
         await progress_message.edit_text(
-            "📝 **Kurs ishi tayyorlanmoqda...**\n\n"
+            "📝 <b>Mustaqil ish tayyorlanmoqda...</b>\n\n"
             f"Fan: {fan_nomi}\n"
             f"Mavzu: {mavzu}\n"
-            f"Til: {til_}\n\n"
-            f"✅ **Mundarija tayyor!**\n"
-            f"✅ **Kirish qismi tayyor!**\n"
-            f"✅ **I bob tayyor!**\n\n"
-            "⏳ [55% |██████------]\nII bob tayyorlanmoqda...",
-            parse_mode=ParseMode.MARKDOWN
+            f"Til: {til}\n\n"
+            f"✅ <b>Mundarija tayyor!</b>\n"
+            f"✅ <b>Kirish qismi tayyor!</b>\n"
+            f"✅ <b>Asosiy qism tayyor!</b>\n\n"
+            "⏳ [75% |█████████---]\nXulosa tayyorlanmoqda...",
+            parse_mode=ParseMode.HTML
         )
 
-        # II bobni generatsiya qilish
-        bob_2_path = generate_bob_2(fan_nomi, mavzu, til_, chapter_2_sections, sahifa)
+        xulosa_path = generate_xulosa(fan_nomi, mavzu, til_)
         await asyncio.sleep(1)
 
         await progress_message.edit_text(
-            "📝 **Kurs ishi tayyorlanmoqda...**\n\n"
+            "📝 <b>Mustaqil ish tayyorlanmoqda...</b>\n\n"
             f"Fan: {fan_nomi}\n"
             f"Mavzu: {mavzu}\n"
-            f"Til: {til_}\n\n"
-            f"✅ **Mundarija tayyor!**\n"
-            f"✅ **Kirish qismi tayyor!**\n"
-            f"✅ **I bob tayyor!**\n"
-            f"✅ **II bob tayyor!**\n\n"
-            "⏳ [70% |████████----]\nXulosa tayyorlanmoqda...",
-            parse_mode=ParseMode.MARKDOWN
+            f"Til: {til}\n\n"
+            f"✅ <b>Mundarija tayyor!</b>\n"
+            f"✅ <b>Kirish qismi tayyor!</b>\n"
+            f"✅ <b>Asosiy qism tayyor!</b>\n"
+            f"✅ <b>Xulosa tayyor!</b>\n\n"
+            "⏳ [90% |███████████-]\nAdabiyotlar tayyorlanmoqda...",
+            parse_mode=ParseMode.HTML
         )
 
-        # Xulosa qismini generatsiya qilish
-        xulosa_path = generate_xulosa(fan_nomi, mavzu, til_, sahifa, chapter_1_sections, chapter_2_sections)
+        adabiyotlar_path = generate_foydalanilgan_adabiyotlar(fan_nomi, mavzu, til_, 13, reja_items)
         await asyncio.sleep(1)
 
         await progress_message.edit_text(
-            "📝 **Kurs ishi tayyorlanmoqda...**\n\n"
+            "📝 <b>Mustaqil ish tayyorlanmoqda...</b>\n\n"
             f"Fan: {fan_nomi}\n"
             f"Mavzu: {mavzu}\n"
-            f"Til: {til_}\n\n"
-            f"✅ **Mundarija tayyor!**\n"
-            f"✅ **Kirish qismi tayyor!**\n"
-            f"✅ **I bob tayyor!**\n"
-            f"✅ **II bob tayyor!**\n"
-            f"✅ **Xulosa tayyor!**\n\n"
-            "⏳ [85% |██████████--]\nAdabiyotlar tayyorlanmoqda...",
-            parse_mode=ParseMode.MARKDOWN
-        )
-
-        # Foydalanilgan adabiyotlar qismini generatsiya qilish
-        adabiyotlar_path = generate_foydalanilgan_adabiyotlar(fan_nomi, mavzu, sahifa, til_, chapter_1_sections,
-                                                              chapter_2_sections)
-        await asyncio.sleep(1)
-
-        await progress_message.edit_text(
-            "📝 **Kurs ishi tayyorlanmoqda...**\n\n"
-            f"Fan: {fan_nomi}\n"
-            f"Mavzu: {mavzu}\n"
-            f"Til: {til_}\n\n"
-            f"✅ **Mundarija tayyor!**\n"
-            f"✅ **Kirish qismi tayyor!**\n"
-            f"✅ **I bob tayyor!**\n"
-            f"✅ **II bob tayyor!**\n"
-            f"✅ **Xulosa tayyor!**\n"
-            f"✅ **Adabiyotlar tayyor!**\n\n"
+            f"Til: {til}\n\n"
+            f"✅ <b>Mundarija tayyor!</b>\n"
+            f"✅ <b>Kirish qismi tayyor!</b>\n"
+            f"✅ <b>Asosiy qism tayyor!</b>\n"
+            f"✅ <b>Xulosa tayyor!</b>\n"
+            f"✅ <b>Adabiyotlar tayyor!</b>\n\n"
             "⏳ [95% |███████████-]\nFayllar birlashtirilmoqda...",
-            parse_mode=ParseMode.MARKDOWN
+            parse_mode=ParseMode.HTML
         )
 
-        # Docx fayllarni birlashtirish
         merged_path = f"generated_docs/merged_{mavzu}_{til_.lower().replace(' ', '_')}.docx"
-        merge_docx_files([mundarija_path, kirish_path, bob_1_path, bob_2_path, xulosa_path, adabiyotlar_path],
-                         merged_path)
+        merge_docs(merged_path, [mundarija_path, kirish_path, asosiy_path, xulosa_path, adabiyotlar_path])
         await asyncio.sleep(1)
 
     except Exception as e:
         await progress_message.edit_text(
-            f"❌ **Xatolik yuz berdi:** {str(e)}\nIltimos, qaytadan urinib ko‘ring.",
-            parse_mode=ParseMode.MARKDOWN
+            f"❌ <b>Xatolik yuz berdi:</b> {str(e)}\nIltimos, qaytadan urinib ko‘ring.",
+            parse_mode=ParseMode.HTML
         )
-        user_data.pop(user_id, None)
+        independent_user_data.pop(user_id, None)
         await callback.answer()
         return
 
-    # Birlashtirilgan docx faylni yuborish
     if not Path(merged_path).exists():
-        await callback.message.answer("❌ Xatolik: Birlashtirilgan fayl topilmadi!", parse_mode=ParseMode.MARKDOWN)
-        user_data.pop(user_id, None)
+        await callback.message.answer("❌ Xatolik: Birlashtirilgan fayl topilmadi!", parse_mode=ParseMode.HTML)
+        independent_user_data.pop(user_id, None)
         await callback.answer()
         return
 
@@ -548,31 +476,21 @@ async def confirm_course(callback: CallbackQuery):
 
     await callback.message.answer_document(document)
     await callback.message.answer(
-        f"✅ **Xizmatimizdan foydalanganingiz uchun tashakkur!**\n",
+        f"✅ <b>Xizmatimizdan foydalanganingiz uchun tashakkur!</b>\n",
         reply_markup=main_kb,
-        parse_mode=ParseMode.MARKDOWN
+        parse_mode=ParseMode.HTML
     )
 
     await progress_message.edit_text(
-        "🎉 **Kurs ishi tayyor!**\n\n"
+        "🎉 <b>Mustaqil ish tayyor!</b>\n\n"
         f"Fan: {fan_nomi}\n"
         f"Mavzu: {mavzu}\n"
-        f"Til: {til_}\n\n"
+        f"Til: {til}\n\n"
         "✅ [100% |████████████]\nFayl yuklab olindi!",
-        parse_mode=ParseMode.MARKDOWN
+        parse_mode=ParseMode.HTML
     )
 
-    # Fayllarni o‘chirish
-    paths_to_delete = [
-        mundarija_path,
-        kirish_path,
-        bob_1_path,
-        bob_2_path,
-        xulosa_path,
-        adabiyotlar_path,
-        merged_path
-    ]
-
+    paths_to_delete = [mundarija_path, kirish_path, asosiy_path, xulosa_path, adabiyotlar_path, merged_path]
     for path in paths_to_delete:
         try:
             if os.path.exists(path):
@@ -581,16 +499,15 @@ async def confirm_course(callback: CallbackQuery):
         except Exception as e:
             print(f"Fayl o‘chirishda xatolik: {path}, Xato: {str(e)}")
 
-    # Foydalanuvchi ma'lumotlarini o‘chirish
-    user_data.pop(user_id, None)
+    independent_user_data.pop(user_id, None)
     await callback.answer()
 
 
-@router.callback_query(F.data == "confirm_no")
-async def cancel_course(callback: CallbackQuery):
+@independent_router.callback_query(F.data == "indep_confirm_no")
+async def cancel_independent(callback: CallbackQuery):
     user_id = callback.from_user.id
-    lang = user_data[user_id]['lang_code']
-    await callback.message.edit_text(language_messages[lang]["cancel"], reply_markup=main_kb,
-                                     parse_mode=ParseMode.MARKDOWN)
-    user_data.pop(user_id, None)
+    lang = independent_user_data[user_id]['lang_code']
+    lnm = language_messages[lang]["cancel"]
+    await callback.message.answer(lnm, reply_markup=main_kb, parse_mode=ParseMode.MARKDOWN)
+    independent_user_data.pop(user_id, None)
     await callback.answer()

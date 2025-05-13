@@ -1,8 +1,21 @@
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 
-main_kb = ReplyKeyboardMarkup(keyboard=[
-    [KeyboardButton(text="Kurs ishi"), KeyboardButton(text="Balans")],[KeyboardButton(text="Tariflar")],
-], resize_keyboard=True)
+main_kb = ReplyKeyboardMarkup(
+    keyboard=[
+        [
+            KeyboardButton(text="🎓 Kurs ishi"),
+            KeyboardButton(text="📄 Mustaqil ish")
+        ],
+        [
+            KeyboardButton(text="💰 Balans"),
+            KeyboardButton(text="🔖 Tariflar")
+        ],
+        [
+            KeyboardButton(text="🎲 Sirli Kupon")
+        ]
+    ],
+    resize_keyboard=True
+)
 
 confirm_kb = ReplyKeyboardMarkup(keyboard=[
     [KeyboardButton(text="Ha"), KeyboardButton(text="Yo'q")],

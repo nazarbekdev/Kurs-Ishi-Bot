@@ -12,7 +12,8 @@ API_URL = os.getenv('API_URL')
 @router.message(F.text == "/start")
 async def start_handler(message: Message):
     await save_user(message)
-    await message.answer("Assalomu alaykum, Kurs Ishi Robot ga xush kelibsiz!\n\nQuyidagi xizmatlardan birini tanlang:", reply_markup=main_kb)
+    await message.answer("👋 Assalomu alaykum, <b>Kurs Ishi Robot</b> ga xush kelibsiz!\n\n"
+                         "Quyidagi xizmatlardan birini tanlang:", parse_mode='HTML', reply_markup=main_kb)
 
 
 async def save_user(message: Message):
