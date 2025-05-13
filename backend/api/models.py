@@ -30,3 +30,17 @@ class BotUser(models.Model):
         return self.full_name
 
 
+class UserCoupon(models.Model):
+    user = models.ForeignKey(BotUser, on_delete=models.CASCADE, related_name='coupons')
+    coupon_type = models.CharField(max_length=50, choices=[
+        ('chegirma', 'Chegirma'),
+        ('sovga', 'Sovga')
+    ])
+    value = models.CharField(max_length=50)  # Masalan, "5%", "bepul_konsultatsiya"
+    text = models.CharField(max_length=100)  # Foydalanuvchiga ko‘rsatiladigan matn
+    expiry = models.DateTimeField()  # Kuponning tugash vaqti
+    created_at = models.DateTimeField(auto_now_add=True)  # Kupon yaratilgan vaqt
+    used = models.BooleanField(default=False)  # Kupon ishlatilgan yoki yo‘q
+
+    def __str__(self):
+        return f"{self.user.full_name} - {self.text}"
