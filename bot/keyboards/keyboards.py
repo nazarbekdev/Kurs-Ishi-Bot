@@ -1,4 +1,4 @@
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
 main_kb = ReplyKeyboardMarkup(
     keyboard=[
@@ -7,11 +7,19 @@ main_kb = ReplyKeyboardMarkup(
             KeyboardButton(text="📄 Mustaqil ish")
         ],
         [
-            KeyboardButton(text="💰 Balans"),
-            KeyboardButton(text="🔖 Tariflar")
+            KeyboardButton(text="🚀 Maxsus Kurs Ishi"),
+            KeyboardButton(text="📕 Slayd Tayyorlash")
         ],
         [
+            KeyboardButton(text="💰 Balans"),
             KeyboardButton(text="🎲 Sirli Kupon")
+        ],
+        [
+            KeyboardButton(text="🔖 Tariflar"),
+            KeyboardButton(text="📘 Qo'llanma")
+        ],
+        [
+            KeyboardButton(text="👨‍💻 Admin")
         ]
     ],
     resize_keyboard=True
