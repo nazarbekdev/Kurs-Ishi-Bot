@@ -40,6 +40,12 @@ def generate_coupon():
         {"type": "chegirma", "value": "15%", "text": "15% chegirma"},
         {"type": "chegirma", "value": "20%", "text": "20% chegirma"},
         {"type": "chegirma", "value": "25%", "text": "25% chegirma"},
+
+        {"type": "chegirma", "value": "30%", "text": "30% chegirma"},
+        {"type": "chegirma", "value": "35%", "text": "35% chegirma"},
+        {"type": "chegirma", "value": "40%", "text": "40% chegirma"},
+        {"type": "chegirma", "value": "45%", "text": "45% chegirma"},
+        {"type": "chegirma", "value": "50%", "text": "50% chegirma"},
         {"type": "chegirma", "value": "30%", "text": "30% chegirma"},
     ]
     return random.choice(rewards)

@@ -190,8 +190,15 @@ language_messages = {
                              "• <b>Sahifalar:</b> {sahifa}\n\n"
                              "💸 <b>Narxi:</b> {price:,} so’m\n\n"
                              "👇 Tasdiqlang yoki bekor qiling:",
-        "balance_error": "❌ Balansingizda yetarli mablag' mavjud emas! Hozirgi balans: {balance} so'm.\nIltimos, balansingizni to'ldiring.",
-        "cancel": "Bekor qilindi."
+        "balance_error":
+            "❌ <b>Balansingizda yetarli mablag' mavjud emas!</b>\nHozirgi balans: <b>{balance} so'm</b>.\n\n"
+            "Iltimos, balansingizni to'ldiring.\n\n"
+            "🎁 <b>Eslatma:</b> Siz chegirma kuponini olish orqali arzonlashtirilgan narxda xizmatlardan foydalanishingiz mumkin!\n"
+            "➡️ <b>«🎲 Sirli Kupon»</b> tugmasini bosing yoki /get_coupon buyrug'idan foydalaning.",
+        "cancel":
+            "❌ <b>Amaliyot bekor qilindi.</b>\n\n"
+            "🎁 <b>Eslatma:</b> Siz chegirma kuponini olish orqali ba'zi xizmatlardan chegirma bilan foydalanishingiz mumkin!\n"
+            "➡️ <b>«🎲 Sirli Kupon»</b> tugmasini bosing yoki /get_coupon buyrug'idan foydalaning.",
     },
     "ru": {
         "fan": "Введите название предмета или области, по которой хотите написать курсовую работу:",
@@ -212,8 +219,16 @@ language_messages = {
                              "• <b>Страницы:</b> {sahifa}\n\n"
                              "💸 <b>Стоимость:</b> {price:,} сум\n\n"
                              "👇 Подтвердите или отмените:",
-        "balance_error": "❌ На вашем балансе недостаточно средств! Текущий баланс: {balance} сум.\nПожалуйста, пополните баланс.",
-        "cancel": "Отменено."
+        "balance_error":
+            "❌ <b>На вашем балансе недостаточно средств!</b>\nТекущий баланс: <b>{balance} сум</b>.\n\n"
+            "Пожалуйста, пополните ваш баланс.\n\n"
+            "🎁 <b>Подсказка:</b> Вы можете получить скидку, используя купон!\n"
+            "➡️ Нажмите <b>«🎲 Sirli Kupon»</b> или используйте команду /get_coupon.",
+
+        "cancel":
+            "❌ <b>Операция отменена.</b>\n\n"
+            "🎁 <b>Подсказка:</b> Вы можете воспользоваться скидкой, получив купон!\n"
+            "➡️ Нажмите <b>«🎲 Sirli Kupon»</b> или введите /get_coupon",
     },
     "en": {
         "fan": "Enter the name of the subject or field for your coursework:",
@@ -234,14 +249,23 @@ language_messages = {
                              "• <b>Pages:</b> {sahifa}\n\n"
                              "💸 <b>Price:</b> {price:,} UZS\n\n"
                              "👇 Confirm or cancel:",
-        "balance_error": "❌ Insufficient funds in your balance! Current balance: {balance} UZS.\nPlease top up your balance.",
-        "cancel": "Cancelled."
+        "balance_error":
+            "❌ <b>You don't have enough balance!</b>\nCurrent balance: <b>{balance} UZS</b>.\n\n"
+            "Please top up your account.\n\n"
+            "🎁 <b>Tip:</b> You can use a discount coupon to reduce your payment!\n"
+            "➡️ Tap <b>«🎲 Sirli Kupon»</b> or use the /get_coupon command.",
+
+        "cancel":
+            "❌ <b>Operation cancelled.</b>\n\n"
+            "🎁 <b>Tip:</b> You can save money by using a discount coupon!\n"
+            "➡️ Tap <b>«🎲 Sirli Kupon»</b> or type /get_coupon",
     }
 }
 
 
-@router.message(F.text == "🎓 Kurs ishi")
+@router.message(F.text.in_({"🎓 Kurs ishi", "/kurs_ishi"}))
 async def course_start(message: Message):
+    await message.answer("Kurs ishi yozish uchun dastlab namuna bilan tanishib chiqing!\n👉 @/kursishinamuna\n Bot ushbu namunalar bo'yicha tayyorlab beradi.\nSizda boshqa standart bo'lsa /admin ga murojaat qiling!!!")
     await message.answer("Qaysi tilda bo’lsin:", reply_markup=language_kb)
     user_data[message.from_user.id] = {}
 
@@ -361,7 +385,7 @@ async def confirm_course(callback: CallbackQuery):
     if current_balance < price:
         await callback.message.edit_text(
             language_messages[lang]["balance_error"].format(balance=current_balance),
-            parse_mode=ParseMode.MARKDOWN
+            parse_mode=ParseMode.HTML
         )
         user_data.pop(user_id, None)
         await callback.answer()
@@ -591,6 +615,6 @@ async def cancel_course(callback: CallbackQuery):
     user_id = callback.from_user.id
     lang = user_data[user_id]['lang_code']
     await callback.message.edit_text(language_messages[lang]["cancel"], reply_markup=main_kb,
-                                     parse_mode=ParseMode.MARKDOWN)
+                                     parse_mode=ParseMode.HTML)
     user_data.pop(user_id, None)
     await callback.answer()

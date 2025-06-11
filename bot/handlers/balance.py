@@ -8,7 +8,7 @@ router = Router()
 API_URL = os.getenv('API_URL')
 
 
-@router.message(F.text == "💰 Balans")
+@router.message(F.text.in_({"💰 Balans", "/balans"}))
 async def balance(message: Message):
     async with aiohttp.ClientSession() as session:
         async with session.get(f"{API_URL}/api/get/{message.from_user.id}/") as resp:

@@ -214,7 +214,7 @@ language_messages = {
 }
 
 
-@independent_router.message(F.text == "📄 Mustaqil ish")
+@independent_router.message(F.text.in_({"📄 Mustaqil ish", "/mustaqil_ish"}))
 async def independent_start(message: Message):
     await message.answer("Qaysi tilda bo’lsin:", reply_markup=language_kb)
     independent_user_data[message.from_user.id] = {}
