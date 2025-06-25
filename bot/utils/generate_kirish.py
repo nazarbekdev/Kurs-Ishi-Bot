@@ -99,23 +99,27 @@ def add_formatted_paragraph(document: Document, text: str, is_heading: bool = Fa
             run = para.add_run(heading_part)
             run.bold = True
             run.font.size = Pt(14)
+            run.font.name = "Times New Roman"
 
             # Qolgan matnni oddiy qilish
             run = para.add_run(" " + content_part)
             run.bold = False
             run.font.size = Pt(14)
+            run.font.name = "Times New Roman"
         else:
             # Agar sarlavha bo‘lmasa, qatorni ikki tomondan tekislaymiz
             para.alignment = WD_PARAGRAPH_ALIGNMENT.JUSTIFY
             run = para.add_run(text.strip())
             run.bold = False
             run.font.size = Pt(14)
+            run.font.name = "Times New Roman"
     else:
         # Umumiy kirish matni yoki boshqa oddiy matnlar ikki tomondan tekislanadi
         para.alignment = WD_PARAGRAPH_ALIGNMENT.JUSTIFY
         run = para.add_run(text.strip())
         run.bold = False
         run.font.size = Pt(14)
+        run.font.name = "Times New Roman"
 
     para.paragraph_format.space_after = Pt(8)
 
@@ -146,7 +150,7 @@ def generate_kirish(fan_nomi: str, mavzu: str, til: str) -> str:
       Birinchi qator "{template['subject']}: {template['subject_start']} ..." shaklida bo‘lsin.
     - {template['object']} (birinchi jumla sarlavhadan keyin ikki nuqta bilan bir qatorda davom etsin, obyektni aniq va ilmiy uslubda 500 ta so'z bilan ifodab yozing):
       Birinchi qator "{template['object']}: {template['object_start']} ..." shaklida bo‘lsin.
-    Har bir bo‘limni keng doirada fikrlab yoz. Matn ilmiy uslubda, aniq va ravon, plagiatdan xoli bo‘lsin. {til} tilida yozing.
+    Har bir bo‘limni keng doirada fikrlab yoz. Matn ilmiy uslubda, aniq va ravon, plagiatdan xoli bo‘lsin. {til} tilida yozing. Times New Roman, 14 pt.
     Har bir bo‘limni yangi qatordan boshlang. Umumiy kirish matni uchun sarlavha ishlatmang, qolgan bo‘limlarning birinchi jumlasi sarlavhadan keyin ikki nuqta (:) bilan bir qatorda davom etsin.
     Namuna sifatida quyidagi uslubdan foydalaning:
     {template['example']}
@@ -154,7 +158,7 @@ def generate_kirish(fan_nomi: str, mavzu: str, til: str) -> str:
 
     try:
         response = client.chat.completions.create(
-            model="gpt-4.1-nano",  # "gpt-4.1-nano" modeli yo'q, "gpt-4o" yoki "gpt-3.5-turbo" ishlatiladi
+            model="gpt-4.1-nano",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.7,
         )
@@ -172,6 +176,7 @@ def generate_kirish(fan_nomi: str, mavzu: str, til: str) -> str:
     run = kirish_title.runs[0]
     run.bold = True
     run.font.size = Pt(14)
+    run.font.name = "Times New Roman"
 
     # Kirish matnini qo‘shish
     lines = kirish_text.split('\n')

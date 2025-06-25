@@ -265,7 +265,7 @@ language_messages = {
 
 @router.message(F.text.in_({"🎓 Kurs ishi", "/kurs_ishi"}))
 async def course_start(message: Message):
-    await message.answer("Kurs ishi yozish uchun dastlab namuna bilan tanishib chiqing!\n👉 @/kursishinamuna\n Bot ushbu namunalar bo'yicha tayyorlab beradi.\nSizda boshqa standart bo'lsa /admin ga murojaat qiling!!!")
+    await message.answer("<b>⚠️OGOHLANTIRISH!</b> Kurs ishi yozish uchun dastlab namuna bilan tanishib chiqing!\n👉 @kursishinamuna  Bot ushbu namunalar bo'yicha tayyorlab beradi.\n\nSizda boshqa standart bo'lsa /admin ga murojaat qiling!!!", parse_mode='HTML')
     await message.answer("Qaysi tilda bo’lsin:", reply_markup=language_kb)
     user_data[message.from_user.id] = {}
 

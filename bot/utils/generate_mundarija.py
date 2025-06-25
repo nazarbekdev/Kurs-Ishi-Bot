@@ -88,6 +88,7 @@ def generate_mundarija(fan_nomi: str, mavzu: str, til: str) -> tuple[str, str, d
      {template['references']}
     Har bir {template['chapter']} va {template['subchapter']}lar mavzuga mos holda, ilmiy ohangda bo'lsin. 
     Bo'limlar oldida "- " yoki boshqa belgilar bo'lmasin, faqat "1.1." formatida bo'lsin.
+    Times New Roman, 14 pt. 
     Qo'yilgan talablardan tashqari ortiqcha yozuv va belgilar bo'lmasin!!!
     """
 
@@ -192,6 +193,7 @@ def generate_mundarija(fan_nomi: str, mavzu: str, til: str) -> tuple[str, str, d
     run = title.runs[0]
     run.bold = True
     run.font.size = Pt(14)
+    run.font.name = "Times New Roman"
 
     # MUNDARIJA sarlavhasi (tilga mos ravishda, markazda, qalin)
     toc_title = TOC_TITLES.get(til.lower(), "MUNDARIJA")
@@ -200,6 +202,7 @@ def generate_mundarija(fan_nomi: str, mavzu: str, til: str) -> tuple[str, str, d
     run = mundarija_title.runs[0]
     run.bold = True
     run.font.size = Pt(14)
+    run.font.name = "Times New Roman"
 
     # Mundarija matnini qo'shish (faqat OpenAI javobidan olingan qatorlarni ishlatamiz)
     bold_keywords = BOLD_KEYWORDS.get(til.lower(), BOLD_KEYWORDS["o'zbek tili"])
@@ -215,6 +218,7 @@ def generate_mundarija(fan_nomi: str, mavzu: str, til: str) -> tuple[str, str, d
         para.paragraph_format.left_indent = Pt(indent)
         run = para.runs[0]
         run.font.size = Pt(14)
+        run.font.name = "Times New Roman"
         # Qalin qilish uchun kalit so‘zlarni tekshirish
         if any(keyword in formatted_line.lower() for keyword in bold_keywords):
             run.bold = True

@@ -55,12 +55,14 @@ def add_formatted_paragraph(document: Document, text: str, is_heading: bool = Fa
         run = para.add_run(text.strip())
         run.bold = True
         run.font.size = Pt(14)
+        run.font.name = "Times New Roman"
     else:
         # Oddiy matn uchun ikki tomondan tekislangan va qalin emas
         para.alignment = WD_PARAGRAPH_ALIGNMENT.JUSTIFY
         run = para.add_run(text.strip())
         run.bold = False
         run.font.size = Pt(14)
+        run.font.name = "Times New Roman"
 
     para.paragraph_format.space_after = Pt(8)
 
@@ -111,6 +113,7 @@ def generate_xulosa(fan_nomi: str, mavzu: str, til: str, sahifa: int, chapter_1_
       II bob: {chapter_2_sections.get('chapter_title', 'Nomalum')}
       {chapter_2_info}
     - {til} tilida yozing.
+    Times New Roman, 14 pt.
     Namuna sifatida quyidagi uslubdan foydalaning:
     {example}
     """

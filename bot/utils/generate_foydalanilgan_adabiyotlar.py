@@ -67,12 +67,14 @@ def add_formatted_paragraph(document: Document, text: str, is_heading: bool = Fa
         run = para.add_run(text.strip())
         run.bold = True
         run.font.size = Pt(14)
+        run.font.name = "Times New Roman"
     else:
         # Oddiy matn uchun xat boshidan va qalin emas
         para.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
         run = para.add_run(text.strip())
         run.bold = False
         run.font.size = Pt(14)
+        run.font.name = "Times New Roman"
 
     para.paragraph_format.space_after = Pt(8)
 
@@ -80,9 +82,9 @@ def add_formatted_paragraph(document: Document, text: str, is_heading: bool = Fa
 def calculate_references_count(page_count: int) -> int:
     """Sahifalar soniga qarab manbalar sonini hisoblash."""
     # Har 5 sahifa uchun 1-2 manba deb hisoblaymiz
-    base_references = page_count // 5
-    total_references = max(5, base_references + 2)  # Kamida 5 manba bo‘ladi
-    return min(total_references, 30)  # Maksimal 30 manba bilan cheklaymiz
+    base_references = page_count // 2
+    total_references = max(5, base_references + 10)  # Kamida 5 manba bo‘ladi
+    return min(total_references, 40)  # Maksimal 40 manba bilan cheklaymiz
 
 
 def generate_foydalanilgan_adabiyotlar(fan_nomi: str, mavzu: str, page_count: int, til: str, chapter_1_sections: dict,
@@ -131,6 +133,7 @@ def generate_foydalanilgan_adabiyotlar(fan_nomi: str, mavzu: str, page_count: in
           II bob: {chapter_2_sections.get('chapter_title', 'Nomalum')}
           {chapter_2_info}
         - Matn ilmiy uslubda, {til} tilida bo‘lsin.
+        Times New Roman, 14 pt.
         Namuna sifatida quyidagi uslubdan foydalaning:
         {template['example']}
         """
@@ -151,6 +154,7 @@ def generate_foydalanilgan_adabiyotlar(fan_nomi: str, mavzu: str, page_count: in
           II bob: {chapter_2_sections.get('chapter_title', 'Nomalum')}
           {chapter_2_info}
         - Matn ilmiy uslubda, {til} tilida bo‘lsin.
+        Times New Roman, 14 pt.
         Namuna sifatida quyidagi uslubdan foydalaning:
         {template['example']}
         """

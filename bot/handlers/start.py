@@ -16,7 +16,7 @@ async def start_handler(message: Message):
     await message.answer(
         "👋 <b>Assalomu alaykum!</b>\n"
         "<b>Kurs Ishi Robot</b> ga xush kelibsiz! 🎓\n\n"
-        "🎲 Har kuni <b>Sirli Kupon</b> orqali <b>30 %</b> gacha chegirmalardan foydalaning!\n"
+        "🎲 Har kuni <b>Sirli Kupon</b> orqali <b>20 %</b> gacha chegirmalardan foydalaning!\n"
         "👉 /get_coupon buyrug‘ini yozing.\n\n"
         "📹 Kurs ishi yozishni o‘rganish uchun:\n"
         "👉 /video buyrug‘ini yozing.",
@@ -43,7 +43,9 @@ async def start_handler(message: Message):
         "📬 <b>Taklif yoki savollar</b> bo‘yicha:\n"
         "🔗 @camtest_admin\n\n"
         "👨‍💻 <b>Bot dasturchisi:</b>\n"
-        "🔗 @mr_uzdev\n"
+        "🔗 @happiness_0405\n\n"
+        "📞 <b>Bog'lanish uchun:</b>\n"
+        "🔗 +998 91 212 24 00\n"
         "──────────────────────\n"
         "🤝 <i>Fikringiz biz uchun muhim!</i>",
         parse_mode=ParseMode.HTML
